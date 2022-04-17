@@ -125,14 +125,6 @@ public class MainActivity extends AppCompatActivity {
                 }).create().show();
     }
 
-    /*private void actualizarTexto(Location location){
-        textViewUbicacion.setText("Lat: " + location.getLatitude());
-    }
-
-    private void activarGPS(){
-
-    }*/
-
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
@@ -140,7 +132,6 @@ public class MainActivity extends AppCompatActivity {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 if (ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
                     if (gpsActivado()) {
-
                         fusedLocationProviderClient.requestLocationUpdates(locationRequest, locationCallback, null);
                     } else {
                         alertaNoGPS();
@@ -151,26 +142,6 @@ public class MainActivity extends AppCompatActivity {
             }
         }
     }
-
-    /*private void verificarUbicacionPermisos(){
-        if(ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED){
-            if(ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.ACCESS_FINE_LOCATION)){
-                new AlertDialog.Builder(this)
-                        .setTitle("Proporciona los permisos para continuar")
-                        .setMessage("Esta aplicaion requiere de los permisos de ubicación")
-                        .setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                ActivityCompat.requestPermissions(MainActivity.this, new String[] {Manifest.permission.ACCESS_FINE_LOCATION}, LOCATION_REQUEST_CODE);
-                            }
-                        })
-                        .create()
-                        .show();
-            }else{
-                ActivityCompat.requestPermissions(MainActivity.this, new String[] {Manifest.permission.ACCESS_FINE_LOCATION}, LOCATION_REQUEST_CODE);
-            }
-        }
-    }*/
 
     /*locationRequest.setPriority(LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY);
                     fusedLocationProviderClient.getLastLocation().addOnSuccessListener(new OnSuccessListener<Location>() {
