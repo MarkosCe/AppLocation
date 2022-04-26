@@ -61,6 +61,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 actualizarGPS();
+                //startService();
             }
         });
 
@@ -77,7 +78,24 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         };
+    }
 
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        stopLocation();
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        startService();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        stopService();
     }
 
     private boolean gpsActivado(){
@@ -141,6 +159,24 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         }
+    }
+
+    private void stopLocation(){
+        if (locationCallback != null && fusedLocationProviderClient != null){
+            fusedLocationProviderClient.removeLocationUpdates(locationCallback);
+        }
+    }
+
+    private void startService(){
+        stopLocation();
+        Intent serviceIntent = new Intent(this, ForegroundService.class);
+        ContextCompat.startForegroundService(MainActivity.this, serviceIntent);
+    }
+
+    private void stopService(){
+        actualizarGPS();
+        Intent serviceIntent = new Intent(this, ForegroundService.class);
+        stopService(serviceIntent);
     }
 
     /*locationRequest.setPriority(LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY);
