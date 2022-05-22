@@ -35,12 +35,11 @@ public class MainActivity extends AppCompatActivity {
     private TextView textViewUbicacion;
     private Button buttonObtenerUbicacion;
 
-    private FusedLocationProviderClient fusedLocationProviderClient;
-    private LocationRequest locationRequest;
-    private LocationCallback locationCallback;
     private LocationManager locationManager;
 
     private int LOCATION_REQUEST_CODE = 1;
+
+    private boolean activado = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,80 +49,44 @@ public class MainActivity extends AppCompatActivity {
         textViewUbicacion = findViewById(R.id.textViewLocation);
         buttonObtenerUbicacion = findViewById(R.id.buttonObtenerUbicacion);
 
-        //fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
-
-        locationRequest = LocationRequest.create();
-        locationRequest.setInterval(10000);
-        locationRequest.setFastestInterval(5000);
-        locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
-
         buttonObtenerUbicacion.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                actualizarGPS();
-                //startService();
+                if (!activado){
+                    actualizarGPS();
+                    buttonObtenerUbicacion.setText("Detener ubicación");
+                    activado = true;
+                }
+                else {
+                    stopService();
+                    buttonObtenerUbicacion.setText("Obtener ubicación");
+                    activado = false;
+                }
             }
         });
-
-        locationCallback = new LocationCallback() {
-            @Override
-            public void onLocationResult(LocationResult locationResult) {
-                if (locationResult == null) {
-                    Toast.makeText(MainActivity.this, "no hay nada", Toast.LENGTH_SHORT).show();
-                    return;
-                }
-                for (Location location : locationResult.getLocations()) {
-                    Toast.makeText(MainActivity.this, "hay algo", Toast.LENGTH_SHORT).show();
-                    textViewUbicacion.setText("Lat: " + location.getLatitude());
-                }
-            }
-        };
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        stopLocation();
-    }
-
-    @Override
-    protected void onStop() {
-        super.onStop();
-        startService();
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        stopService();
     }
 
     private boolean gpsActivado(){
         boolean isEnabled = false;
         locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-
         isEnabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
         return isEnabled;
     }
 
     private void actualizarGPS(){
-        fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             if (ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-                //Toast.makeText(MainActivity.this, "Acceso a ubicacion otorgado", Toast.LENGTH_SHORT).show();
                 if (gpsActivado()) {
-                    fusedLocationProviderClient.requestLocationUpdates(locationRequest, locationCallback, null);
+                    startService();
                 } else {
                     alertaNoGPS();
                 }
             } else {
-                //verificarUbicacionPermisos();
                 requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
             }
         }else {
             if (gpsActivado()) {
-                locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
-                fusedLocationProviderClient.requestLocationUpdates(locationRequest, locationCallback, null);
+                startService();
             } else {
                 alertaNoGPS();
             }
@@ -150,7 +113,7 @@ public class MainActivity extends AppCompatActivity {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 if (ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
                     if (gpsActivado()) {
-                        fusedLocationProviderClient.requestLocationUpdates(locationRequest, locationCallback, null);
+                        startService();
                     } else {
                         alertaNoGPS();
                     }
@@ -161,33 +124,14 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void stopLocation(){
-        if (locationCallback != null && fusedLocationProviderClient != null){
-            fusedLocationProviderClient.removeLocationUpdates(locationCallback);
-        }
-    }
-
     private void startService(){
-        stopLocation();
         Intent serviceIntent = new Intent(this, ForegroundService.class);
         ContextCompat.startForegroundService(MainActivity.this, serviceIntent);
     }
 
     private void stopService(){
-        actualizarGPS();
         Intent serviceIntent = new Intent(this, ForegroundService.class);
         stopService(serviceIntent);
     }
-
-    /*locationRequest.setPriority(LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY);
-                    fusedLocationProviderClient.getLastLocation().addOnSuccessListener(new OnSuccessListener<Location>() {
-                        @Override
-                        public void onSuccess(Location location) {
-                            if (location != null){
-                                Toast.makeText(MainActivity.this, "Ultima ubivacion", Toast.LENGTH_SHORT).show();
-                                textViewUbicacion.setText("Lat: " + location.getLatitude());
-                            }
-                        }
-                    });*/
 
 }
